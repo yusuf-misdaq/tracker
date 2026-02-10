@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Track">
+<meta name="apple-mobile-web-app-title" content="Yu-Track">
 <meta name="theme-color" content="#0a0a0f">
-<title>Track</title>
+<title>Yu-Track</title>
 <link rel="manifest" href="manifest.json">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700&display=swap');
@@ -371,7 +371,7 @@
     z-index: 200;
     display: none;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .history-panel.open { display: flex; }
@@ -383,6 +383,7 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
   }
 
   .h-header h2 {
@@ -406,6 +407,7 @@
     display: flex;
     padding: 12px 16px;
     gap: 6px;
+    flex-shrink: 0;
   }
 
   .h-tab {
@@ -428,7 +430,7 @@
     border-color: var(--text);
   }
 
-  .h-content { padding: 16px; flex: 1; }
+  .h-content { padding: 16px; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 40px; }
 
   /* History Chart */
   .h-chart-container {
@@ -530,6 +532,7 @@
     padding: 0 16px 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
   }
 
   .h-cat-filter::-webkit-scrollbar { display: none; }
@@ -549,16 +552,26 @@
   }
 
   .h-cat-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .footer {
+    text-align: center;
+    padding: 32px 16px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
 </style>
 </head>
 <body>
 
 <div class="app" id="app">
   <header>
-    <h1>TRACK</h1>
+    <h1>YU-TRACK</h1>
     <div class="date-label" id="dateLabel"></div>
   </header>
   <div class="categories" id="categories"></div>
+  <div class="footer">© Yusuf Misdaq, 2025</div>
 </div>
 
 <!-- Add Modal -->
