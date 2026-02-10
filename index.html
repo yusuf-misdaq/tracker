@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Track">
+<meta name="theme-color" content="#0a0a0f">
+<title>Track</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #131318;
+    --surface2: #1a1a22;
+    --border: #2a2a35;
+    --text: #e8e8ed;
+    --text-dim: #6e6e7a;
+    --accent-protein: #e07a5f;
+    --accent-carbs: #f2cc8f;
+    --accent-fat: #81b29a;
+    --accent-calories: #3d85c6;
+    --accent-workout: #c77dff;
+    --accent-prayer: #f4a261;
+    --ring-bg: #1e1e28;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 0;
+    overscroll-behavior: none;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px 16px 100px;
+    padding-top: env(safe-area-inset-top, 16px);
+  }
+
+  header {
+    text-align: center;
+    padding: 12px 0 20px;
+  }
+
+  header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .date-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* Category Cards */
+  .categories { display: flex; flex-direction: column; gap: 12px; }
+
+  .cat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+
+  .cat-card:active { background: var(--surface2); }
+
+  .cat-card .ring-wrap {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .cat-card .ring-wrap svg { width: 56px; height: 56px; transform: rotate(-90deg); }
+
+  .ring-bg { stroke: var(--ring-bg); }
+  .ring-fill { transition: stroke-dashoffset 0.5s ease; stroke-linecap: round; }
+
+  .ring-pct {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .cat-info { flex: 1; min-width: 0; }
+
+  .cat-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .cat-progress {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .cat-progress span { font-weight: 300; color: var(--text-dim); font-size: 16px; }
+
+  .cat-period {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  .cat-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .btn-add, .btn-sub {
+    width: 40px;
+    height: 32px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+  }
+
+  .btn-add:active, .btn-sub:active { background: var(--border); }
+
+  /* Input Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 16px));
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .modal h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .modal input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    text-align: center;
+    outline: none;
+  }
+
+  .modal input[type="number"]:focus { border-color: var(--text-dim); }
+
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .modal-btns button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .modal-cancel { background: var(--surface2); color: var(--text); border: 1px solid var(--border) !important; }
+  .modal-confirm { background: var(--text); color: var(--bg); }
+
+  /* Quick-add presets */
+  .quick-adds {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .quick-add {
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .quick-add:active { background: var(--border); }
+
+  /* Settings */
+  .settings-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+
+  .history-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+
+  /* Settings Panel */
+  .settings-panel {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .settings-panel.open { display: flex; }
+
+  .settings-panel .s-header {
+    padding: 16px;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .settings-panel .s-header h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .s-close {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .settings-list { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+  .s-item label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .s-item input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    text-align: center;
+    outline: none;
+  }
+
+  .s-item input:focus { border-color: var(--text-dim); }
+
+  .s-save {
+    margin: 16px;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--text);
+    color: var(--bg);
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* History Panel */
+  .history-panel {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .history-panel.open { display: flex; }
+
+  .h-header {
+    padding: 16px;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .h-header h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .h-close {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  /* Time Range Tabs */
+  .h-tabs {
+    display: flex;
+    padding: 12px 16px;
+    gap: 6px;
+  }
+
+  .h-tab {
+    flex: 1;
+    padding: 8px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+
+  .h-tab.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  .h-content { padding: 16px; flex: 1; }
+
+  /* History Chart */
+  .h-chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .h-chart-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .h-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 80px;
+  }
+
+  .h-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    cursor: pointer;
+  }
+
+  .h-bar {
+    width: 100%;
+    min-height: 2px;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.3s;
+  }
+
+  .h-bar-date {
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Day Detail */
+  .day-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: none;
+  }
+
+  .day-detail.open { display: block; }
+
+  .day-detail h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    color: var(--text-dim);
+  }
+
+  .dd-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dd-row:last-child { border-bottom: none; }
+
+  .dd-cat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .dd-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .dd-val span { font-weight: 300; color: var(--text-dim); font-size: 13px; }
+
+  /* Category filter in history */
+  .h-cat-filter {
+    display: flex;
+    gap: 6px;
+    padding: 0 16px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .h-cat-filter::-webkit-scrollbar { display: none; }
+
+  .h-cat-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .h-cat-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header>
+    <h1>TRACK</h1>
+    <div class="date-label" id="dateLabel"></div>
+  </header>
+  <div class="categories" id="categories"></div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modalTitle">ADD</h2>
+    <input type="number" id="modalInput" inputmode="decimal" placeholder="0">
+    <div class="quick-adds" id="quickAdds"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" id="modalConfirm">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="s-header">
+    <h2>Goals</h2>
+    <button class="s-close" onclick="closeSettings()">×</button>
+  </div>
+  <div class="settings-list" id="settingsList"></div>
+  <button class="s-save" onclick="saveSettings()">Save Goals</button>
+</div>
+
+<!-- History -->
+<div class="history-panel" id="historyPanel">
+  <div class="h-header">
+    <h2>History</h2>
+    <button class="h-close" onclick="closeHistory()">×</button>
+  </div>
+  <div class="h-tabs">
+    <div class="h-tab active" onclick="setRange(7)">7D</div>
+    <div class="h-tab" onclick="setRange(14)">14D</div>
+    <div class="h-tab" onclick="setRange(30)">30D</div>
+    <div class="h-tab" onclick="setRange(90)">90D</div>
+    <div class="h-tab" onclick="setRange(0)">ALL</div>
+  </div>
+  <div class="h-cat-filter" id="hCatFilter"></div>
+  <div class="h-content" id="hContent"></div>
+</div>
+
+<button class="history-btn" onclick="openHistory()">📊</button>
+<button class="settings-btn" onclick="openSettings()">⚙</button>
+
+<script>
+const CATS = [
+  { key: 'protein',  name: 'PROTEIN',  color: '#e07a5f', period: 'daily',  quickAdds: [10, 20, 30, 50] },
+  { key: 'carbs',    name: 'CARBS',    color: '#f2cc8f', period: 'daily',  quickAdds: [15, 25, 50, 100] },
+  { key: 'fat',      name: 'FAT',      color: '#81b29a', period: 'daily',  quickAdds: [5, 10, 15, 20] },
+  { key: 'calories', name: 'CALORIES', color: '#3d85c6', period: 'daily',  quickAdds: [100, 200, 300, 500] },
+  { key: 'workout',  name: 'WORKOUT',  color: '#c77dff', period: 'weekly', quickAdds: [1] },
+  { key: 'prayer',   name: 'PRAYER',   color: '#f4a261', period: 'daily',  quickAdds: [1] },
+];
+
+const DEFAULT_GOALS = { protein: 160, carbs: 200, fat: 65, calories: 2000, workout: 3, prayer: 5 };
+
+function getGoals() {
+  const g = localStorage.getItem('track_goals');
+  return g ? JSON.parse(g) : { ...DEFAULT_GOALS };
+}
+
+function setGoals(g) { localStorage.setItem('track_goals', JSON.stringify(g)); }
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function weekKey() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(d);
+  monday.setDate(diff);
+  return `W-${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`;
+}
+
+function getData() {
+  const d = localStorage.getItem('track_data');
+  return d ? JSON.parse(d) : {};
+}
+
+function setData(d) { localStorage.setItem('track_data', JSON.stringify(d)); }
+
+function getVal(catKey) {
+  const cat = CATS.find(c => c.key === catKey);
+  const data = getData();
+  const key = cat.period === 'weekly' ? weekKey() : todayKey();
+  return (data[key] && data[key][catKey]) || 0;
+}
+
+function addVal(catKey, amount) {
+  const cat = CATS.find(c => c.key === catKey);
+  const data = getData();
+  const key = cat.period === 'weekly' ? weekKey() : todayKey();
+  if (!data[key]) data[key] = {};
+  data[key][catKey] = (data[key][catKey] || 0) + amount;
+  if (data[key][catKey] < 0) data[key][catKey] = 0;
+  setData(data);
+}
+
+function formatDate(d) {
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function renderDateLabel() {
+  document.getElementById('dateLabel').textContent = formatDate(new Date());
+}
+
+function renderRing(pct, color, size = 56) {
+  const r = (size - 8) / 2;
+  const circ = 2 * Math.PI * r;
+  const p = Math.min(pct, 100);
+  const offset = circ - (p / 100) * circ;
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="5" class="ring-bg"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke-width="5"
+        stroke="${color}" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" class="ring-fill"/>
+    </svg>`;
+}
+
+function render() {
+  renderDateLabel();
+  const goals = getGoals();
+  const container = document.getElementById('categories');
+  container.innerHTML = '';
+
+  CATS.forEach(cat => {
+    const val = getVal(cat.key);
+    const goal = goals[cat.key] || 1;
+    const pct = Math.round((val / goal) * 100);
+    const periodLabel = cat.period === 'weekly' ? 'this week' : 'today';
+
+    const card = document.createElement('div');
+    card.className = 'cat-card';
+    card.innerHTML = `
+      <div class="ring-wrap">
+        ${renderRing(pct, cat.color)}
+        <div class="ring-pct">${Math.min(pct, 999)}%</div>
+      </div>
+      <div class="cat-info">
+        <div class="cat-name" style="color:${cat.color}">${cat.name}</div>
+        <div class="cat-progress">${val} <span>/ ${goal}</span></div>
+        <div class="cat-period">${periodLabel}</div>
+      </div>
+      <div class="cat-actions">
+        <button class="btn-add" data-cat="${cat.key}">+</button>
+        <button class="btn-sub" data-cat="${cat.key}">−</button>
+      </div>
+    `;
+
+    card.querySelector('.btn-add').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openModal(cat.key, 'add');
+    });
+
+    card.querySelector('.btn-sub').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openModal(cat.key, 'sub');
+    });
+
+    container.appendChild(card);
+  });
+}
+
+// Modal
+let modalCat = null;
+let modalMode = 'add';
+
+function openModal(catKey, mode) {
+  modalCat = catKey;
+  modalMode = mode;
+  const cat = CATS.find(c => c.key === catKey);
+  document.getElementById('modalTitle').textContent = `${mode === 'add' ? 'ADD' : 'SUBTRACT'} ${cat.name}`;
+  document.getElementById('modalTitle').style.color = cat.color;
+  document.getElementById('modal').classList.add('open');
+  const input = document.getElementById('modalInput');
+  input.value = '';
+  input.focus();
+
+  const qa = document.getElementById('quickAdds');
+  qa.innerHTML = '';
+  cat.quickAdds.forEach(v => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-add';
+    btn.textContent = `${mode === 'sub' ? '-' : '+'}${v}`;
+    btn.onclick = () => {
+      addVal(catKey, mode === 'sub' ? -v : v);
+      closeModal();
+      render();
+    };
+    qa.appendChild(btn);
+  });
+
+  const confirm = document.getElementById('modalConfirm');
+  confirm.textContent = mode === 'add' ? 'Add' : 'Subtract';
+  confirm.onclick = () => {
+    const val = parseFloat(input.value);
+    if (!isNaN(val) && val > 0) {
+      addVal(catKey, mode === 'sub' ? -val : val);
+    }
+    closeModal();
+    render();
+  };
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  modalCat = null;
+}
+
+// Close modal on overlay tap
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// Enter key in modal
+document.getElementById('modalInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('modalConfirm').click();
+});
+
+// Settings
+function openSettings() {
+  const goals = getGoals();
+  const list = document.getElementById('settingsList');
+  list.innerHTML = '';
+  CATS.forEach(cat => {
+    const item = document.createElement('div');
+    item.className = 's-item';
+    item.innerHTML = `
+      <label style="color:${cat.color}">${cat.name} ${cat.period === 'weekly' ? '(weekly)' : '(daily)'}</label>
+      <input type="number" inputmode="numeric" id="goal-${cat.key}" value="${goals[cat.key] || 0}">
+    `;
+    list.appendChild(item);
+  });
+  document.getElementById('settingsPanel').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsPanel').classList.remove('open');
+}
+
+function saveSettings() {
+  const goals = {};
+  CATS.forEach(cat => {
+    const val = parseInt(document.getElementById(`goal-${cat.key}`).value);
+    goals[cat.key] = isNaN(val) || val <= 0 ? 1 : val;
+  });
+  setGoals(goals);
+  closeSettings();
+  render();
+}
+
+// History
+let historyRange = 7;
+let historyCat = 'all';
+
+function openHistory() {
+  document.getElementById('historyPanel').classList.add('open');
+  renderCatFilter();
+  renderHistory();
+}
+
+function closeHistory() {
+  document.getElementById('historyPanel').classList.remove('open');
+}
+
+function setRange(days) {
+  historyRange = days;
+  document.querySelectorAll('.h-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderHistory();
+}
+
+function renderCatFilter() {
+  const f = document.getElementById('hCatFilter');
+  f.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = `h-cat-btn ${historyCat === 'all' ? 'active' : ''}`;
+  allBtn.textContent = 'ALL';
+  allBtn.onclick = () => { historyCat = 'all'; renderCatFilter(); renderHistory(); };
+  f.appendChild(allBtn);
+
+  CATS.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = `h-cat-btn ${historyCat === cat.key ? 'active' : ''}`;
+    btn.textContent = cat.name;
+    btn.style.borderColor = historyCat === cat.key ? cat.color : '';
+    btn.style.background = historyCat === cat.key ? cat.color : '';
+    btn.style.color = historyCat === cat.key ? '#0a0a0f' : '';
+    btn.onclick = () => { historyCat = cat.key; renderCatFilter(); renderHistory(); };
+    f.appendChild(btn);
+  });
+}
+
+function getDayKeys(range) {
+  const keys = [];
+  const data = getData();
+  if (range === 0) {
+    // All time - find earliest date
+    const allKeys = Object.keys(data).filter(k => !k.startsWith('W-')).sort();
+    if (allKeys.length === 0) return [todayKey()];
+    const earliest = new Date(allKeys[0]);
+    const today = new Date(todayKey());
+    const diff = Math.ceil((today - earliest) / (1000 * 60 * 60 * 24));
+    range = diff + 1;
+  }
+  for (let i = range - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    keys.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
+  return keys;
+}
+
+function renderHistory() {
+  const content = document.getElementById('hContent');
+  content.innerHTML = '';
+  const data = getData();
+  const goals = getGoals();
+  const dayKeys = getDayKeys(historyRange);
+  const catsToShow = historyCat === 'all'
+    ? CATS.filter(c => c.period === 'daily')
+    : CATS.filter(c => c.key === historyCat);
+
+  // For weekly cats in single-cat view, show weekly data differently
+  if (historyCat !== 'all') {
+    const cat = CATS.find(c => c.key === historyCat);
+    if (cat.period === 'weekly') {
+      renderWeeklyHistory(content, data, goals, cat);
+      return;
+    }
+  }
+
+  catsToShow.forEach(cat => {
+    const chartDiv = document.createElement('div');
+    chartDiv.className = 'h-chart-container';
+    chartDiv.innerHTML = `<div class="h-chart-label" style="color:${cat.color}">${cat.name}</div>`;
+
+    const bars = document.createElement('div');
+    bars.className = 'h-bars';
+
+    const goal = goals[cat.key] || 1;
+    dayKeys.forEach(dk => {
+      const val = (data[dk] && data[dk][cat.key]) || 0;
+      const pct = Math.min((val / goal) * 100, 100);
+      const col = document.createElement('div');
+      col.className = 'h-bar-col';
+
+      const bar = document.createElement('div');
+      bar.className = 'h-bar';
+      bar.style.height = `${Math.max(pct, 3)}%`;
+      bar.style.background = pct >= 100 ? cat.color : `${cat.color}88`;
+
+      const lbl = document.createElement('div');
+      lbl.className = 'h-bar-date';
+      const dt = new Date(dk);
+      lbl.textContent = dayKeys.length <= 14 ? `${dt.getMonth()+1}/${dt.getDate()}` : '';
+
+      col.appendChild(bar);
+      col.appendChild(lbl);
+      col.onclick = () => showDayDetail(dk);
+      bars.appendChild(col);
+    });
+
+    chartDiv.appendChild(bars);
+    content.appendChild(chartDiv);
+  });
+
+  // Day detail area
+  const detail = document.createElement('div');
+  detail.className = 'day-detail';
+  detail.id = 'dayDetail';
+  content.appendChild(detail);
+}
+
+function renderWeeklyHistory(content, data, goals, cat) {
+  const chartDiv = document.createElement('div');
+  chartDiv.className = 'h-chart-container';
+  chartDiv.innerHTML = `<div class="h-chart-label" style="color:${cat.color}">${cat.name} (WEEKLY)</div>`;
+
+  // Gather week keys from data
+  const weekKeys = Object.keys(data).filter(k => k.startsWith('W-')).sort();
+  if (weekKeys.length === 0) {
+    chartDiv.innerHTML += '<div style="color:var(--text-dim);font-size:13px;padding:8px 0;">No data yet</div>';
+    content.appendChild(chartDiv);
+    return;
+  }
+
+  const bars = document.createElement('div');
+  bars.className = 'h-bars';
+  const goal = goals[cat.key] || 1;
+
+  weekKeys.forEach(wk => {
+    const val = (data[wk] && data[wk][cat.key]) || 0;
+    const pct = Math.min((val / goal) * 100, 100);
+    const col = document.createElement('div');
+    col.className = 'h-bar-col';
+
+    const bar = document.createElement('div');
+    bar.className = 'h-bar';
+    bar.style.height = `${Math.max(pct, 3)}%`;
+    bar.style.background = pct >= 100 ? cat.color : `${cat.color}88`;
+
+    const lbl = document.createElement('div');
+    lbl.className = 'h-bar-date';
+    const parts = wk.replace('W-','').split('-');
+    lbl.textContent = `${parts[1]}/${parts[2]}`;
+
+    col.appendChild(bar);
+    col.appendChild(lbl);
+    bars.appendChild(col);
+  });
+
+  chartDiv.appendChild(bars);
+  content.appendChild(chartDiv);
+}
+
+function showDayDetail(dayKey) {
+  const detail = document.getElementById('dayDetail');
+  if (!detail) return;
+  const data = getData();
+  const goals = getGoals();
+  const dayData = data[dayKey] || {};
+  const dt = new Date(dayKey);
+
+  detail.innerHTML = `<h3>${formatDate(dt)}</h3>`;
+  CATS.filter(c => c.period === 'daily').forEach(cat => {
+    const val = dayData[cat.key] || 0;
+    const goal = goals[cat.key] || 1;
+    const row = document.createElement('div');
+    row.className = 'dd-row';
+    row.innerHTML = `
+      <div class="dd-cat" style="color:${cat.color}">${cat.name}</div>
+      <div class="dd-val">${val} <span>/ ${goal}</span></div>
+    `;
+    detail.appendChild(row);
+  });
+
+  detail.classList.add('open');
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
