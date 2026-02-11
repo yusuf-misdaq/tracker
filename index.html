@@ -8,6 +8,17 @@
 <meta name="apple-mobile-web-app-title" content="Yu-Track">
 <meta name="theme-color" content="#0a0a0f">
 <title>Yu-Track</title>
+
+<!-- Social sharing -->
+<meta name="description" content="A minimal daily tracker for nutrition, fitness & prayer. Set goals, track progress, see your history.">
+<meta property="og:title" content="Yu-Track">
+<meta property="og:description" content="A minimal daily tracker for nutrition, fitness & prayer. Set goals, track progress, see your history.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Yu-Track">
+<meta name="twitter:description" content="A minimal daily tracker for nutrition, fitness & prayer. Set goals, track progress, see your history.">
+
 <link rel="manifest" href="manifest.json">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;500;700&display=swap');
@@ -315,12 +326,18 @@
   }
 
   .s-close {
-    background: none;
+    background: var(--text);
     border: none;
-    color: var(--text);
-    font-size: 24px;
+    color: var(--bg);
+    font-size: 18px;
     cursor: pointer;
-    padding: 4px 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
   }
 
   .settings-list { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
@@ -394,12 +411,18 @@
   }
 
   .h-close {
-    background: none;
+    background: var(--text);
     border: none;
-    color: var(--text);
-    font-size: 24px;
+    color: var(--bg);
+    font-size: 18px;
     cursor: pointer;
-    padding: 4px 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
   }
 
   /* Time Range Tabs */
@@ -454,7 +477,47 @@
     display: flex;
     align-items: flex-end;
     gap: 3px;
-    height: 80px;
+    height: 100px;
+    position: relative;
+  }
+
+  .h-goal-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    border-top: 1.5px dashed;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .h-goal-label {
+    position: absolute;
+    right: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    transform: translateY(-14px);
+    opacity: 0.7;
+    z-index: 2;
+  }
+
+  .h-chart-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .h-chart-avg {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .h-chart-avg strong {
+    color: var(--text);
+    font-size: 13px;
   }
 
   .h-bar-col {
@@ -553,6 +616,264 @@
 
   .h-cat-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 
+  /* Meals Button */
+  .meals-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 48px;
+    padding: 0 20px;
+    border-radius: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    z-index: 50;
+  }
+
+  /* Meals Panel */
+  .meals-panel {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .meals-panel.open { display: flex; }
+
+  .m-header {
+    padding: 16px;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .m-header h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .m-close {
+    background: var(--text);
+    border: none;
+    color: var(--bg);
+    font-size: 18px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .m-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+    padding-bottom: 100px;
+  }
+
+  .m-add-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px dashed var(--border);
+    background: none;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+  }
+
+  .m-add-btn:active { background: var(--surface); }
+
+  .meal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .meal-card:active { background: var(--surface2); }
+
+  .meal-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .meal-card-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .meal-card-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .meal-edit-btn, .meal-del-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .meal-card-macros {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .meal-macro-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--surface2);
+  }
+
+  /* Meal Edit Modal */
+  .meal-edit-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 300;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .meal-edit-modal.open { display: flex; }
+
+  .meal-edit-sheet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 16px));
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .meal-edit-sheet h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .meal-field {
+    margin-bottom: 12px;
+  }
+
+  .meal-field label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .meal-field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    outline: none;
+  }
+
+  .meal-field input:focus { border-color: var(--text-dim); }
+
+  .meal-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .meal-edit-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .meal-edit-btns button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .meal-edit-cancel { background: var(--surface2); color: var(--text); border: 1px solid var(--border) !important; }
+  .meal-edit-save { background: var(--text); color: var(--bg); }
+
+  /* Log confirmation toast */
+  .toast {
+    position: fixed;
+    top: calc(20px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 500;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
   .footer {
     text-align: center;
     padding: 32px 16px 16px;
@@ -615,7 +936,55 @@
 </div>
 
 <button class="history-btn" onclick="openHistory()">📊</button>
+<button class="meals-btn" onclick="openMeals()">🍽 MEALS</button>
 <button class="settings-btn" onclick="openSettings()">⚙</button>
+
+<!-- Meals Panel -->
+<div class="meals-panel" id="mealsPanel">
+  <div class="m-header">
+    <h2>Saved Meals</h2>
+    <button class="m-close" onclick="closeMeals()">×</button>
+  </div>
+  <div class="m-content" id="mealsContent"></div>
+</div>
+
+<!-- Meal Edit Modal -->
+<div class="meal-edit-modal" id="mealEditModal">
+  <div class="meal-edit-sheet">
+    <h3 id="mealEditTitle">New Meal</h3>
+    <div class="meal-field">
+      <label>Name</label>
+      <input type="text" id="mealName" placeholder="e.g. Glass of milk">
+    </div>
+    <div class="meal-field-row">
+      <div class="meal-field">
+        <label style="color:#e07a5f">Protein</label>
+        <input type="number" inputmode="decimal" id="mealProtein" placeholder="0">
+      </div>
+      <div class="meal-field">
+        <label style="color:#f2cc8f">Carbs</label>
+        <input type="number" inputmode="decimal" id="mealCarbs" placeholder="0">
+      </div>
+    </div>
+    <div class="meal-field-row">
+      <div class="meal-field">
+        <label style="color:#81b29a">Fat</label>
+        <input type="number" inputmode="decimal" id="mealFat" placeholder="0">
+      </div>
+      <div class="meal-field">
+        <label style="color:#3d85c6">Calories</label>
+        <input type="number" inputmode="decimal" id="mealCalories" placeholder="0">
+      </div>
+    </div>
+    <div class="meal-edit-btns">
+      <button class="meal-edit-cancel" onclick="closeMealEdit()">Cancel</button>
+      <button class="meal-edit-save" id="mealSaveBtn" onclick="saveMeal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
 const CATS = [
@@ -735,6 +1104,10 @@ function render() {
     card.querySelector('.btn-sub').addEventListener('click', (e) => {
       e.stopPropagation();
       openModal(cat.key, 'sub');
+    });
+
+    card.addEventListener('click', () => {
+      openModal(cat.key, 'add');
     });
 
     container.appendChild(card);
@@ -913,22 +1286,52 @@ function renderHistory() {
   catsToShow.forEach(cat => {
     const chartDiv = document.createElement('div');
     chartDiv.className = 'h-chart-container';
-    chartDiv.innerHTML = `<div class="h-chart-label" style="color:${cat.color}">${cat.name}</div>`;
+
+    const goal = goals[cat.key] || 1;
+
+    // Compute values and stats
+    const vals = dayKeys.map(dk => (data[dk] && data[dk][cat.key]) || 0);
+    const daysWithData = vals.filter(v => v > 0);
+    const avg = daysWithData.length > 0 ? Math.round(daysWithData.reduce((a,b) => a+b, 0) / daysWithData.length) : 0;
+    const maxVal = Math.max(goal, ...vals);
+    const scale = maxVal > 0 ? maxVal : 1;
+    const goalPct = (goal / scale) * 100;
+    const daysHit = vals.filter(v => v >= goal).length;
+
+    // Header with label and summary
+    chartDiv.innerHTML = `
+      <div class="h-chart-summary">
+        <div class="h-chart-label" style="color:${cat.color};margin-bottom:0">${cat.name}</div>
+        <div class="h-chart-avg">avg <strong>${avg}</strong> / ${goal} &nbsp;·&nbsp; ${daysHit}/${dayKeys.length} hit</div>
+      </div>`;
 
     const bars = document.createElement('div');
     bars.className = 'h-bars';
 
-    const goal = goals[cat.key] || 1;
+    // Goal line
+    const goalLine = document.createElement('div');
+    goalLine.className = 'h-goal-line';
+    goalLine.style.bottom = `${goalPct}%`;
+    goalLine.style.borderColor = cat.color;
+    bars.appendChild(goalLine);
+
+    const goalLabel = document.createElement('div');
+    goalLabel.className = 'h-goal-label';
+    goalLabel.style.bottom = `${goalPct}%`;
+    goalLabel.style.color = cat.color;
+    goalLabel.textContent = goal;
+    bars.appendChild(goalLabel);
+
     dayKeys.forEach(dk => {
       const val = (data[dk] && data[dk][cat.key]) || 0;
-      const pct = Math.min((val / goal) * 100, 100);
+      const barPct = (val / scale) * 100;
       const col = document.createElement('div');
       col.className = 'h-bar-col';
 
       const bar = document.createElement('div');
       bar.className = 'h-bar';
-      bar.style.height = `${Math.max(pct, 3)}%`;
-      bar.style.background = pct >= 100 ? cat.color : `${cat.color}88`;
+      bar.style.height = `${Math.max(barPct, 2)}%`;
+      bar.style.background = val >= goal ? cat.color : `${cat.color}88`;
 
       const lbl = document.createElement('div');
       lbl.className = 'h-bar-date';
@@ -955,30 +1358,56 @@ function renderHistory() {
 function renderWeeklyHistory(content, data, goals, cat) {
   const chartDiv = document.createElement('div');
   chartDiv.className = 'h-chart-container';
-  chartDiv.innerHTML = `<div class="h-chart-label" style="color:${cat.color}">${cat.name} (WEEKLY)</div>`;
 
-  // Gather week keys from data
   const weekKeys = Object.keys(data).filter(k => k.startsWith('W-')).sort();
   if (weekKeys.length === 0) {
+    chartDiv.innerHTML = `<div class="h-chart-label" style="color:${cat.color}">${cat.name} (WEEKLY)</div>`;
     chartDiv.innerHTML += '<div style="color:var(--text-dim);font-size:13px;padding:8px 0;">No data yet</div>';
     content.appendChild(chartDiv);
     return;
   }
 
+  const goal = goals[cat.key] || 1;
+  const vals = weekKeys.map(wk => (data[wk] && data[wk][cat.key]) || 0);
+  const weeksWithData = vals.filter(v => v > 0);
+  const avg = weeksWithData.length > 0 ? Math.round(weeksWithData.reduce((a,b) => a+b, 0) / weeksWithData.length * 10) / 10 : 0;
+  const maxVal = Math.max(goal, ...vals);
+  const scale = maxVal > 0 ? maxVal : 1;
+  const goalPct = (goal / scale) * 100;
+  const weeksHit = vals.filter(v => v >= goal).length;
+
+  chartDiv.innerHTML = `
+    <div class="h-chart-summary">
+      <div class="h-chart-label" style="color:${cat.color};margin-bottom:0">${cat.name} (WEEKLY)</div>
+      <div class="h-chart-avg">avg <strong>${avg}</strong> / ${goal} &nbsp;·&nbsp; ${weeksHit}/${weekKeys.length} hit</div>
+    </div>`;
+
   const bars = document.createElement('div');
   bars.className = 'h-bars';
-  const goal = goals[cat.key] || 1;
+
+  const goalLine = document.createElement('div');
+  goalLine.className = 'h-goal-line';
+  goalLine.style.bottom = `${goalPct}%`;
+  goalLine.style.borderColor = cat.color;
+  bars.appendChild(goalLine);
+
+  const goalLabel = document.createElement('div');
+  goalLabel.className = 'h-goal-label';
+  goalLabel.style.bottom = `${goalPct}%`;
+  goalLabel.style.color = cat.color;
+  goalLabel.textContent = goal;
+  bars.appendChild(goalLabel);
 
   weekKeys.forEach(wk => {
     const val = (data[wk] && data[wk][cat.key]) || 0;
-    const pct = Math.min((val / goal) * 100, 100);
+    const barPct = (val / scale) * 100;
     const col = document.createElement('div');
     col.className = 'h-bar-col';
 
     const bar = document.createElement('div');
     bar.className = 'h-bar';
-    bar.style.height = `${Math.max(pct, 3)}%`;
-    bar.style.background = pct >= 100 ? cat.color : `${cat.color}88`;
+    bar.style.height = `${Math.max(barPct, 2)}%`;
+    bar.style.background = val >= goal ? cat.color : `${cat.color}88`;
 
     const lbl = document.createElement('div');
     lbl.className = 'h-bar-date';
@@ -1020,6 +1449,186 @@ function showDayDetail(dayKey) {
 
 // Init
 render();
+
+// ========== MEALS SYSTEM ==========
+
+function getMeals() {
+  const m = localStorage.getItem('track_meals');
+  return m ? JSON.parse(m) : [];
+}
+
+function setMeals(m) { localStorage.setItem('track_meals', JSON.stringify(m)); }
+
+let editingMealIndex = -1; // -1 = new meal
+
+function openMeals() {
+  document.getElementById('mealsPanel').classList.add('open');
+  renderMeals();
+}
+
+function closeMeals() {
+  document.getElementById('mealsPanel').classList.remove('open');
+}
+
+function renderMeals() {
+  const content = document.getElementById('mealsContent');
+  const meals = getMeals();
+  content.innerHTML = '';
+
+  // Add new meal button
+  const addBtn = document.createElement('button');
+  addBtn.className = 'm-add-btn';
+  addBtn.textContent = '+ CREATE NEW MEAL';
+  addBtn.onclick = () => openMealEdit(-1);
+  content.appendChild(addBtn);
+
+  if (meals.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;color:var(--text-dim);font-size:13px;padding:32px 0;';
+    empty.textContent = 'No saved meals yet. Create one to quick-log food with a single tap.';
+    content.appendChild(empty);
+    return;
+  }
+
+  meals.forEach((meal, idx) => {
+    const card = document.createElement('div');
+    card.className = 'meal-card';
+
+    const macros = [];
+    if (meal.protein) macros.push(`<span class="meal-macro-tag" style="color:#e07a5f">P ${meal.protein}</span>`);
+    if (meal.carbs) macros.push(`<span class="meal-macro-tag" style="color:#f2cc8f">C ${meal.carbs}</span>`);
+    if (meal.fat) macros.push(`<span class="meal-macro-tag" style="color:#81b29a">F ${meal.fat}</span>`);
+    if (meal.calories) macros.push(`<span class="meal-macro-tag" style="color:#3d85c6">${meal.calories} cal</span>`);
+
+    card.innerHTML = `
+      <div class="meal-card-header">
+        <div class="meal-card-name">${meal.name}</div>
+        <div class="meal-card-actions">
+          <button class="meal-edit-btn" data-idx="${idx}">✎</button>
+          <button class="meal-del-btn" data-idx="${idx}">✕</button>
+        </div>
+      </div>
+      <div class="meal-card-macros">${macros.join('')}</div>
+    `;
+
+    // Tap card to log the meal
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.meal-edit-btn') || e.target.closest('.meal-del-btn')) return;
+      logMeal(idx);
+    });
+
+    card.querySelector('.meal-edit-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openMealEdit(idx);
+    });
+
+    card.querySelector('.meal-del-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteMeal(idx);
+    });
+
+    content.appendChild(card);
+  });
+}
+
+function logMeal(idx) {
+  const meals = getMeals();
+  const meal = meals[idx];
+  if (!meal) return;
+
+  // Add each macro to today's data
+  if (meal.protein) addVal('protein', meal.protein);
+  if (meal.carbs) addVal('carbs', meal.carbs);
+  if (meal.fat) addVal('fat', meal.fat);
+  if (meal.calories) addVal('calories', meal.calories);
+
+  // Show toast
+  showToast(`✓ Logged "${meal.name}"`);
+
+  // Close meals panel and re-render main screen
+  closeMeals();
+  render();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function openMealEdit(idx) {
+  editingMealIndex = idx;
+  const modal = document.getElementById('mealEditModal');
+  const meals = getMeals();
+
+  if (idx >= 0 && meals[idx]) {
+    const meal = meals[idx];
+    document.getElementById('mealEditTitle').textContent = 'EDIT MEAL';
+    document.getElementById('mealName').value = meal.name || '';
+    document.getElementById('mealProtein').value = meal.protein || '';
+    document.getElementById('mealCarbs').value = meal.carbs || '';
+    document.getElementById('mealFat').value = meal.fat || '';
+    document.getElementById('mealCalories').value = meal.calories || '';
+  } else {
+    document.getElementById('mealEditTitle').textContent = 'NEW MEAL';
+    document.getElementById('mealName').value = '';
+    document.getElementById('mealProtein').value = '';
+    document.getElementById('mealCarbs').value = '';
+    document.getElementById('mealFat').value = '';
+    document.getElementById('mealCalories').value = '';
+  }
+
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('mealName').focus(), 100);
+}
+
+function closeMealEdit() {
+  document.getElementById('mealEditModal').classList.remove('open');
+  editingMealIndex = -1;
+}
+
+function saveMeal() {
+  const name = document.getElementById('mealName').value.trim();
+  if (!name) {
+    document.getElementById('mealName').style.borderColor = '#e07a5f';
+    return;
+  }
+
+  const meal = {
+    name: name,
+    protein: parseFloat(document.getElementById('mealProtein').value) || 0,
+    carbs: parseFloat(document.getElementById('mealCarbs').value) || 0,
+    fat: parseFloat(document.getElementById('mealFat').value) || 0,
+    calories: parseFloat(document.getElementById('mealCalories').value) || 0,
+  };
+
+  const meals = getMeals();
+  if (editingMealIndex >= 0) {
+    meals[editingMealIndex] = meal;
+  } else {
+    meals.push(meal);
+  }
+
+  setMeals(meals);
+  closeMealEdit();
+  renderMeals();
+}
+
+function deleteMeal(idx) {
+  const meals = getMeals();
+  const name = meals[idx]?.name || 'this meal';
+  if (confirm(`Delete "${name}"?`)) {
+    meals.splice(idx, 1);
+    setMeals(meals);
+    renderMeals();
+  }
+}
+
+// Close meal edit modal on overlay tap
+document.getElementById('mealEditModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('mealEditModal')) closeMealEdit();
+});
 </script>
 </body>
 </html>
